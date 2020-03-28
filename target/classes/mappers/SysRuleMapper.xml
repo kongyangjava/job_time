@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.job.mapper.SysRuleMapper">
+
+    <select id="findAll" resultType="com.job.entity.SysRule">
+        select * from sys_rule
+    </select>
+
+    <select id="findDetails" resultType="map">
+        select sort,introduce from sys_rule_details
+        where ruleId=#{ruleId}
+        order by sort asc
+    </select>
+
+    <delete id="deleteRuleDetails">
+        delete from sys_rule_details
+        where ruleId=#{ruleId}
+    </delete>
+
+    <insert id="insertRuleDetails">
+        insert into sys_rule_details (ruleId,sort,introduce) values
+        <foreach collection="sysRuleDetailsList" item="item" index="index" separator=",">
+            (#{ruleId},#{item.sort},#{item.introduce})
+        </foreach>
+    </insert>
+</mapper>

@@ -141,6 +141,8 @@ public class JobController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "jobId", value = "任务id", dataType = "int", required = true),})
     public ServerResponse refreshJob(Integer jobId) {
+        log.error("----------------");
         return jobService.refreshJob(jobId);
+
     }
 }

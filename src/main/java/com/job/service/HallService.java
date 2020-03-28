@@ -68,11 +68,10 @@ public class HallService {
         Page<JobListVo> page = PageHelper.startPage(pageNo, pageSize);
         if (jobDto.getLabel() == 4) {
             hallMapper.findNew(jobDto);
-            return ServerResponse.createBySuccess(PageVO.build(page));
         } else {
             hallMapper.findList(jobDto);
-            return ServerResponse.createBySuccess(PageVO.build(page));
         }
+        return ServerResponse.createBySuccess(PageVO.build(page));
     }
 
     /**

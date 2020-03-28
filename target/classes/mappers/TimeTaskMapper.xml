@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.job.mapper.TimerTaskMapper">
+
+    <update id="updateMember">
+        <foreach collection="userInfoList" item="item" index="index" open="" close="" separator=";">
+            UPDATE user_info
+            <set>
+                isMember=#{item.isMember}
+            </set>
+            <where>
+                userId = #{item.userId}
+            </where>
+        </foreach>
+    </update>
+
+    <select id="findMember" resultType="com.job.entity.UserInfo">
+        select * from user_info where <![CDATA[ isMember>1
+        ]]>
+    </select>
+
+    <update id="jobExpire">
+        update user_job
+        set status=2
+        where <![CDATA[ endTime>now()  ]]> and status=1
+    </update>
+
+    <select id="jobCommit" resultType="com.job.entity.UserJob">
+        select j.taskId,j.userId,j.jobId,j.commitTime,job.releasePrice
+        from user_job j
+        inner join job job on j.jobId=job.jobId
+        where status=3 and  <![CDATA[ commitTime<date_sub(now(),interval #{day} day)
+        ]]>
+    </select>
+
+    <update id="updateJobCommit">
+        update user_job set
+        status=4,
+        auditTime=now()
+        where taskId in
+        <foreach collection="userJobList" item="item" open="(" separator="," close=")">
+            #{item.taskId}
+        </foreach>
+    </update>
+
+    <select id="findNotEnd" resultType="com.job.entity.UserReport">
+        select * from user_report where isEnd=1 and reportStatus in (1,2)
+    </select>
+
+    <update id="updateReport">
+        update user_report set
+        reportStatus=3,
+        refuteTime=now(),
+        refuteReason='超过24小时，自动提交'
+        where reportId in
+        <foreach collection="userReports" item="item" open="(" separator="," close=")">
+            #{item.reportId}
+        </foreach>
+    </update>
+
+    <select id="selectRefresh" resultType="com.job.entity.UserMoney">
+        select m.userId,m.refreshNum
+        from user_money m
+        where m.refreshNum>0 and userId=#{userId}
+    </select>
+
+    <select id="selectJob" resultType="com.job.entity.Job">
+       select j.userId,j.jobId,j.refreshTime
+        from  job j
+        where j.jobStatus=1 and j.auditStatus=3 and DATE_FORMAT(j.refreshTime,'%Y-%m-%d %H')=DATE_FORMAT(now(),'%Y-%m-%d %H')
+    </select>
+</mapper>

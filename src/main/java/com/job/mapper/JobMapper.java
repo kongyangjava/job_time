@@ -44,6 +44,9 @@ public interface JobMapper {
 
     /**
      * 查询所有待审核任务
+     * @param jobTitle
+     * @param jobSource
+     * @param typeId
      * @return
      */
     List<JobVo> findAll(@Param("jobTitle") String jobTitle,@Param("jobSource") String jobSource,@Param("typeId") Integer typeId);

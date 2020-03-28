@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.job.mapper.UserMoneyMapper">
+
+    <select id="selectById" resultType="com.job.entity.UserMoney">
+        select * from user_money  where userId=#{userId}
+    </select>
+
+    <insert id="insertMoney">
+        insert into user_money (userId)
+        values (#{userId})
+    </insert>
+
+    <update id="updateMoney" parameterType="com.job.entity.UserMoney">
+        update user_money
+        <set>
+            <if test="bond != null">
+                bond = #{bond},
+            </if>
+            <if test="balance != null">
+                balance = #{balance},
+            </if>
+            <if test="repaidBalance != null">
+                repaidBalance = #{repaidBalance},
+            </if>
+            <if test="bonus != null">
+                bonus = #{bonus},
+            </if>
+            <if test="jobNum != null">
+                jobNum = #{jobNum},
+            </if>
+            <if test="refreshNum != null">
+                refreshNum = #{refreshNum},
+            </if>
+        </set>
+        where userId=#{userId}
+    </update>
+
+    <update id="updateAdmin">
+        update user_admin
+        set money=#{money}
+        where adminId=1
+    </update>
+
+    <insert id="insertMoneyDetails">
+        insert into user_money_details (userId,type,introduce,money,tradeTime)
+        values
+        (#{userId},#{type},#{introduce},#{money},#{tradeTime})
+    </insert>
+
+    <select id="money" resultType="java.math.BigDecimal">
+        select money from user_admin where adminId=1
+    </select>
+
+    <select id="findAll" resultType="com.job.entity.UserMoneyDetails">
+        select * from user_money_details where userId=#{userId}
+        order by tradeTime desc
+    </select>
+
+    <select id="countInvite" resultType="java.math.BigDecimal">
+        select sum(money) from user_money_details where userId=#{userId}
+    </select>
+</mapper>

@@ -5,7 +5,7 @@ spring:
       driver-class-name: com.mysql.cj.jdbc.Driver
       url: jdbc:mysql://127.0.0.1:3306/job_time?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&serverTimezone=GMT%2B8
       username: root
-      password: manager
+      password: 960106
       initialSize: 1  #初始化大小
       minIdle: 1  #空闲连接池的大小
       maxActive: 50 #最大激活数量

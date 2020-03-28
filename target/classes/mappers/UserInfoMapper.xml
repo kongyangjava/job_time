@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.job.mapper.UserInfoMapper">
+    <select id="findByPhone" resultType="com.job.entity.UserInfo">
+    select * from user_info
+    where phone=#{phone}
+  </select>
+
+    <select id="findPassword" resultType="com.job.entity.UserInfo">
+        select * from user_info
+        where phone=#{phone} and password=#{password}
+    </select>
+
+    <select id="findByOpenId" resultType="com.job.entity.UserInfo">
+    select * from user_info
+    where openId=#{openId}
+     </select>
+
+    <select id="findByUserId" resultType="com.job.entity.UserInfo">
+    select * from user_info
+    where userId=#{userId}
+  </select>
+
+    <select id="findJob" resultType="java.lang.Integer">
+        select count(1) from user_job where status in (1,3) and userId=#{userId} and jobId=#{jobId}
+    </select>
+
+    <select id="findByUId" resultType="com.job.entity.UserInfo">
+    select * from user_info
+    where UID=#{UID}
+  </select>
+
+    <insert id="insertPhone" useGeneratedKeys="true" keyProperty="userId">
+        insert into user_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="phone != null">
+                phone,
+            </if>
+            <if test="UID != null">
+                UID,
+            </if>
+            <if test="upUID != null">
+                upUID,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="phone != null">
+                #{phone},
+            </if>
+            <if test="UID != null">
+                #{UID},
+            </if>
+            <if test="upUID != null">
+                #{upUID},
+            </if>
+        </trim>
+    </insert>
+
+    <insert id="insertCode">
+    insert into code (phone,code,sendTime)
+    values (#{phone},#{code},now())
+  </insert>
+
+    <select id="findCodeByPhone" resultType="java.lang.String">
+    select  code,sendTime
+    from code where phone=#{phone} and isUse=0 ORDER BY sendTime desc LIMIT 1
+  </select>
+
+    <update id="updateCode">
+    update code
+    set isUse=1
+    where phone=#{phone}
+  </update>
+
+    <select id="UidIsExist" resultType="java.lang.Integer">
+    select count(1 ) from user_info where UID=#{UID}
+  </select>
+
+    <select id="findAll" resultType="com.job.entity.UserInfo">
+        select * from user_info
+        <where>
+            <if test="phone!=null and phone!=''">
+                and phone like concat('%',#{phone},'%')
+            </if>
+            <if test="status!=null and status!='' or status==0">
+                and status=#{status}
+            </if>
+        </where>
+        order by status asc
+    </select>
+
+    <select id="findCustomer" resultType="com.job.entity.UserInfo">
+        select userId,headimgurl,nickname from user_info where isAdmin=1
+    </select>
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.job.entity.UserInfo">
+        update user_info
+        <set>
+            <if test="phone != null">
+                phone = #{phone,jdbcType=VARCHAR},
+            </if>
+            <if test="openid != null">
+                openid = #{openid,jdbcType=VARCHAR},
+            </if>
+            <if test="password != null">
+                password = #{password,jdbcType=VARCHAR},
+            </if>
+            <if test="nickname != null">
+                nickname = #{nickname,jdbcType=VARCHAR},
+            </if>
+            <if test="sex != null">
+                sex = #{sex,jdbcType=INTEGER},
+            </if>
+            <if test="province != null">
+                province = #{province,jdbcType=VARCHAR},
+            </if>
+            <if test="city != null">
+                city = #{city,jdbcType=VARCHAR},
+            </if>
+            <if test="country != null">
+                country = #{country,jdbcType=VARCHAR},
+            </if>
+            <if test="headimgurl != null">
+                headimgurl = #{headimgurl,jdbcType=VARCHAR},
+            </if>
+            <if test="isAdmin != null">
+                isAdmin = #{isAdmin,jdbcType=INTEGER},
+            </if>
+            <if test="UID != null">
+                UID = #{UID,jdbcType=INTEGER},
+            </if>
+            <if test="status != null or status==0">
+                status = #{status,jdbcType=INTEGER},
+            </if>
+            <if test="upUID != null">
+                upUID = #{upUID,jdbcType=INTEGER},
+            </if>
+            <if test="weekMemberTime != null">
+                weekMemberTime = #{weekMemberTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="monthMemberTime != null">
+                monthMemberTime = #{monthMemberTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="seasonMemberTime != null">
+                seasonMemberTime = #{seasonMemberTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="yearMemberTime != null">
+                yearMemberTime = #{yearMemberTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="isMember != null">
+                isMember = #{isMember,jdbcType=INTEGER},
+            </if>
+            <if test="reason != null">
+                reason = #{reason,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where userId = #{userId,jdbcType=INTEGER}
+    </update>
+
+    <update id="modifyAdminInfo">
+        update user_admin set
+        account=#{account},
+        password=#{password}
+        where admnId=#{adminId}
+    </update>
+
+    <select id="loginAdminInfo" resultType="map">
+        select * from user_admin
+        where account=#{account} and password=#{password}
+    </select>
+
+    <insert id="insertInfo">
+        insert into user_admin (account,password)
+        values (#{account},#{password})
+    </insert>
+
+    <select id="selectInfo" resultType="java.lang.Integer">
+        select count(1) from user_admin
+        <where>
+            account=#{account}
+            <if test="adminId!=null and adminId!=''">
+                and <![CDATA[ adminId <> #{adminId} ]]>
+            </if>
+        </where>
+    </select>
+
+    <delete id="deleteInfo">
+        delete from user_admin where adminId=#{adminId}
+    </delete>
+
+    <update id="updateInfo">
+        update user_admin
+        <set>
+            <if test="account != null">
+                account = #{account,jdbcType=VARCHAR},
+            </if>
+            <if test="password != null">
+                password = #{password,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where adminId=#{adminId}
+    </update>
+
+    <select id="selectAll" resultType="java.util.Map">
+        select a.adminId,a.account,i.phone from user_admin a left join user_info i on a.userId=i.userId
+    </select>
+
+    <insert id="insertSelective" parameterType="com.job.entity.UserInfo" useGeneratedKeys="true" keyProperty="userId">
+        insert into user_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">
+                userId,
+            </if>
+            <if test="phone != null">
+                phone,
+            </if>
+            <if test="password != null">
+                password,
+            </if>
+            <if test="openid != null">
+                openid,
+            </if>
+            <if test="nickname != null">
+                nickname,
+            </if>
+            <if test="sex != null">
+                sex,
+            </if>
+            <if test="province != null">
+                province,
+            </if>
+            <if test="city != null">
+                city,
+            </if>
+            <if test="country != null">
+                country,
+            </if>
+            <if test="headimgurl != null">
+                headimgurl,
+            </if>
+            <if test="isAdmin != null">
+                isAdmin,
+            </if>
+            <if test="UID != null">
+                UID,
+            </if>
+            <if test="status != null">
+                status,
+            </if>
+            <if test="upUID != null">
+                upUID,
+            </if>
+            <if test="weekMemberTime != null">
+                weekMemberTime,
+            </if>
+            <if test="monthMemberTime != null">
+                monthMemberTime,
+            </if>
+            <if test="seasonMemberTime != null">
+                seasonMemberTime,
+            </if>
+            <if test="yearMemberTime != null">
+                yearMemberTime,
+            </if>
+            <if test="isMember != null">
+                isMember,
+            </if>
+            <if test="reason != null">
+                reason,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">
+                #{userId,jdbcType=INTEGER},
+            </if>
+            <if test="phone != null">
+                #{phone,jdbcType=VARCHAR},
+            </if>
+            <if test="password != null">
+                #{password,jdbcType=VARCHAR},
+            </if>
+            <if test="openid != null">
+                #{openid,jdbcType=VARCHAR},
+            </if>
+            <if test="nickname != null">
+                #{nickname,jdbcType=VARCHAR},
+            </if>
+            <if test="sex != null">
+                #{sex,jdbcType=INTEGER},
+            </if>
+            <if test="province != null">
+                #{province,jdbcType=VARCHAR},
+            </if>
+            <if test="city != null">
+                #{city,jdbcType=VARCHAR},
+            </if>
+            <if test="country != null">
+                #{country,jdbcType=VARCHAR},
+            </if>
+            <if test="headimgurl != null">
+                #{headimgurl,jdbcType=VARCHAR},
+            </if>
+            <if test="isAdmin != null">
+                #{isAdmin,jdbcType=INTEGER},
+            </if>
+            <if test="UID != null">
+                #{UID,jdbcType=INTEGER},
+            </if>
+            <if test="status != null">
+                #{status,jdbcType=INTEGER},
+            </if>
+            <if test="upUID != null">
+                #{upUID,jdbcType=VARCHAR},
+            </if>
+            <if test="weekMemberTime != null">
+                #{weekMemberTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="monthMemberTime != null">
+                #{monthMemberTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="seasonMemberTime != null">
+                #{seasonMemberTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="yearMemberTime != null">
+                #{yearMemberTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="isMember != null">
+                #{isMember,jdbcType=INTEGER},
+            </if>
+            <if test="reason != null">
+                #{reason,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <insert id="insertFoot">
+        insert into admin_foot (adminId,userId,content,modifyTime)
+        values
+        (#{adminId},#{userId},#{content},now())
+    </insert>
+
+    <select id="selectFoot" resultType="com.job.entity.AdminFoot">
+        select f.footId,a.account,i.phone,i.nickName,f.content,f.modifyTime from
+        admin_foot f
+        inner join user_admin a on f.adminId=a.adminId
+        inner join user_info i on i.userId=f.userId
+        <where>
+            <if test="account!=null and account!=''">
+                and a.account like concat('%',#{account},'%')
+            </if>
+            <if test="phone!=null and phone!=''">
+                and i.phone like concat('%',#{phone},'%')
+            </if>
+            <if test="nickName!=null and nickName!=''">
+                and i.nickName like concat('%',#{nickName},'%')
+            </if>
+        </where>
+        order by f.modifyTime desc
+    </select>
+
+    <select id="selectById" resultType="java.util.Map">
+        select * from user_admin where adminId=#{adminId}
+    </select>
+
+</mapper>

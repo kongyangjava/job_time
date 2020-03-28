@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.job.mapper.HallMapper">
+
+    <select id="selectAll" resultType="com.job.entity.JobType">
+        select * from job_type
+    </select>
+
+    <select id="findList" resultType="com.job.entity.vo.JobListVo">
+        select j.jobId,i.userId,j.jobTitle,j.releasePrice,j.jobNum,j.jobNum as surplusNum,t.typeName,j.jobSource,i.headimgurl,i.isMember,j.isRecommend
+        from job j
+        inner join job_type t on j.typeId=t.typeId
+        inner join user_info i on j.userId=i.userId
+        <where>
+            j.auditStatus=3 and j.jobStatus=1 and j.isDelete=1
+            <if test="label!=null and label!=''">
+                and j.label=#{label}
+            </if>
+            <if test="typeId!=null and typeId!=''">
+                and j.typeId=#{typeId}
+            </if>
+            <if test="keyWord!=null and keyWord!=''">
+                and (
+                j.jobSource like concat('%',#{keyWord},'%')
+                or j.jobTitle like concat('%',#{keyWord},'%')
+                or t.typeName like concat('%',#{keyWord},'%')
+                )
+            </if>
+        </where>
+        order by isRecommend desc,j.refreshTime desc
+    </select>
+
+    <select id="findNew" resultType="com.job.entity.vo.JobListVo">
+        select j.jobId,i.userId,j.jobTitle,j.releasePrice,j.jobNum,j.jobNum as surplusNum,t.typeName,j.jobSource,i.headimgurl,i.isMember,j.isRecommend
+        from job j
+        inner join job_type t on j.typeId=t.typeId
+        inner join user_info i on j.userId=i.userId
+        <where>
+            j.auditStatus=3 and j.jobStatus=1 and j.isDelete=1
+            <if test="typeId!=null and typeId!=''">
+                and j.typeId=#{typeId}
+            </if>
+            <if test="keyWord!=null and keyWord!=''">
+                and (
+                j.jobSource like concat('%',#{keyWord},'%')
+                or j.jobTitle like concat('%',#{keyWord},'%')
+                or t.typeName like concat('%',#{keyWord},'%')
+                )
+            </if>
+        </where>
+        order by j.refreshTime desc
+    </select>
+
+    <insert id="insertFootprint">
+    insert into user_footprint (userId,jobId,browseTime) values
+    (#{userId},#{jobId},now())
+    </insert>
+
+    <resultMap id="JobDetails" type="com.job.entity.vo.JobVo">
+        <result column="jobId" property="jobId"/>
+        <result column="userId" property="userId"/>
+        <result column="headimgurl" property="headimgurl"/>
+        <result column="UID" property="UID"/>
+        <result column="jobTitle" property="jobTitle"/>
+        <result column="jobSource" property="jobSource"/>
+        <result column="typeName" property="typeName"/>
+        <result column="submissionTime" property="submissionTime"/>
+        <result column="releasePrice" property="releasePrice"/>
+        <result column="introduce" property="introduce"/>
+        <result column="status" property="status"/>
+        <result column="isMember" property="isMember"/>
+        <result column="isRecommend" property="isRecommend"/>
+        <collection property="jobStepList" select="getJobStepList" column="jobId"/>
+    </resultMap>
+
+    <select id="selectJobDetails" resultMap="JobDetails">
+    select j.jobId,i.userId,i.headimgurl,i.UID,j.jobTitle,j.jobSource,t.typeName,j.submissionTime,j.releasePrice,j.introduce,j.jobNum,
+    j.jobNum as surplusNum,ifnull(uj.status,0) as status,i.isMember,j.isRecommend
+    from job j
+    inner join user_info i on j.userId=i.userId
+    inner join job_type t on j.typeId=t.typeId
+    left join user_job uj on uj.jobId=j.jobId and uj.userId=#{userId} and uj.status in(1,3)
+    where j.jobId=#{jobId}
+    </select>
+
+    <select id="selectJob" resultMap="JobDetails">
+     select j.jobId,i.userId,i.headimgurl,i.UID,j.jobTitle,j.jobSource,t.typeName,j.submissionTime,j.releasePrice,j.introduce,j.jobNum,
+    j.jobNum as surplusNum,0 as status,i.isMember,j.isRecommend
+    from job j
+    inner join user_info i on j.userId=i.userId
+    inner join job_type t on j.typeId=t.typeId
+    where j.jobId=#{jobId}
+    </select>
+
+    <select id="getJobStepList" resultType="com.job.entity.JobStep">
+    select stepId,stepType,sort,checkPicture,picture,website,introduce from job_step
+    where jobId=#{jobId}
+    order by sort
+    </select>
+
+    <insert id="userSignUp" useGeneratedKeys="true" keyProperty="taskId">
+        insert into user_job (userId,jobId,endTime,enrollTime) values (#{userId},#{jobId},#{endTime},#{enrollTime})
+    </insert>
+
+    <select id="selectUserJob" resultType="java.lang.Integer">
+        select count(1) from user_job
+        <where>
+            userId=#{userId} and jobId=#{jobId} and status=4
+            <if test="type==2">
+                and date(commitTime) = curdate()
+            </if>
+        </where>
+    </select>
+
+    <update id="updateJob">
+        update job set
+        jobNum=jobNum-1,
+        signUpNum=signUpNum+1
+        where jobId=#{jobId}
+    </update>
+
+    <update id="updateCommitNum">
+        update job set
+        commitNum=commitNum+1,
+        signUpNum=signUpNum-1
+        where jobId=#{jobId}
+    </update>
+
+    <update id="updateUserJob">
+        update user_job set
+        status=3,
+        commitInfo=#{commitInfo},
+        commitTime=now()
+        where userId=#{userId} and jobId=#{jobId}
+    </update>
+
+    <select id="selectId" resultType="java.lang.Integer">
+        select  taskId from user_job where userId=#{userId} and jobId=#{jobId}
+    </select>
+
+    <select id="userCommit" resultType="java.lang.Integer">
+        select count(1) from user_job where status=4 and userId=#{userId} and jobId=#{jobId}
+    </select>
+
+    <insert id="insertBatch">
+        insert into user_commit (taskId,sort,checkPicture)
+        values
+        <foreach collection="jobStepList" item="item" index="index" separator=",">
+            (#{taskId},#{item.sort},#{item.checkPicture})
+        </foreach>
+    </insert>
+</mapper>
